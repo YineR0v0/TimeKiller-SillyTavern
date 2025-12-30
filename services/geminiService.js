@@ -18,7 +18,7 @@ window.TK.generateAdventureResponse = async (history, userInput) => {
               contents: [
                   { 
                     role: "user", 
-                    parts: [{ text: `System: You are a Dungeon Master for a text adventure game. The player is ${userName} ({{user}}). The current companion character is ${charName} ({{char}}). You should incorporate ${charName} into the adventure if appropriate. Keep responses short (under 100 words), engaging, and interactive. Be creative.` }] 
+                    parts: [{ text: `System: You are a Dungeon Master for a text adventure game. The player is ${userName}. The current companion character is ${charName}. You should incorporate ${charName} into the adventure if appropriate. Keep responses short (under 100 words), engaging, and interactive. Be creative.` }] 
                   },
                   ...history.map(h => ({
                       role: h.role === 'model' ? 'model' : 'user',
