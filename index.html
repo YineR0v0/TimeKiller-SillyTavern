@@ -27,6 +27,14 @@
     
     <!-- Global Namespace Init -->
     <script>window.TK = {};</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+      window.addEventListener('message', (event) => {
+        if (event.data === 'TOGGLE_WINDOW') window.dispatchEvent(new CustomEvent('toggle-app'));
+      });
+    </script>
 
     <!-- Load Utils First -->
     <script type="text/babel" src="./types.js"></script>
@@ -55,13 +63,5 @@
     <script type="text/babel" src="./components/Settings.js"></script>
     <script type="text/babel" src="./App.js"></script>
     <script type="text/babel" src="./main.js"></script>
-</head>
-<body>
-    <div id="root"></div>
-    <script>
-      window.addEventListener('message', (event) => {
-        if (event.data === 'TOGGLE_WINDOW') window.dispatchEvent(new CustomEvent('toggle-app'));
-      });
-    </script>
 </body>
 </html>
