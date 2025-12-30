@@ -1,8 +1,4 @@
 
-import React, { useEffect } from 'react';
-import { themes } from '../../utils/themes.js';
-import { playSound } from '../../utils/sound.js';
-
 const isValid = (board, row, col, num) => {
     for (let x = 0; x < 9; x++) {
         if (board[row][x] === num || board[x][col] === num) return false;
@@ -56,10 +52,11 @@ const generateSudoku = (difficulty) => {
     return { initial: board, solution };
 };
 
-const Sudoku = ({ onBack, currentTheme, soundEnabled, gameState, setGameState }) => {
+window.TK.Sudoku = ({ onBack, currentTheme, soundEnabled, gameState, setGameState }) => {
+  const { themes, playSound } = window.TK;
   const theme = themes[currentTheme];
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!gameState) {
         startNewGame('easy');
     }
@@ -226,5 +223,3 @@ const Sudoku = ({ onBack, currentTheme, soundEnabled, gameState, setGameState })
     </div>
   );
 };
-
-export default Sudoku;
