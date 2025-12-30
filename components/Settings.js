@@ -1,30 +1,23 @@
 
-import React, { useState, useRef } from 'react';
-import { themes } from '../utils/themes.js';
-import { playSound } from '../utils/sound.js';
-
 const PRESET_FONTS = [
     { name: '默认字体 (Default)', family: 'Inter, system-ui, sans-serif', url: '' },
     { name: '像素风格 (Pixel)', family: "'Press Start 2P', cursive", url: 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap' },
     { name: '中文字体 - 快乐体', family: "'ZCOOL KuaiLe', cursive", url: 'https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap' },
-    { name: '中文字体 - 马善政', family: "'Ma Shan Zheng', cursive", url: 'https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap' },
-    { name: '中文字体 - 黑体', family: "'Noto Sans SC', sans-serif", url: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap' },
-    { name: '手写体 (Handwriting)', family: "'Patrick Hand', cursive", url: 'https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap' },
-    { name: '代码体 (Monospace)', family: "'Fira Code', monospace", url: 'https://fonts.googleapis.com/css2?family=Fira+Code&display=swap' },
 ];
 
-const Settings = ({ 
+window.TK.Settings = ({ 
   onBack, currentTheme, setTheme, customColors, setCustomColors, 
   soundEnabled, setSoundEnabled, particleConfig, setParticleConfig,
   presets, setPresets, fontSettings, setFontSettings
 }) => {
+  const { themes, playSound } = window.TK;
   const theme = themes[currentTheme];
-  const [importString, setImportString] = useState('');
-  const [showImport, setShowImport] = useState(false);
-  const [newPresetName, setNewPresetName] = useState('');
-  const [showSavePreset, setShowSavePreset] = useState(false);
-  const [activeTab, setActiveTab] = useState('theme');
-  const fileInputRef = useRef(null);
+  const [importString, setImportString] = React.useState('');
+  const [showImport, setShowImport] = React.useState(false);
+  const [newPresetName, setNewPresetName] = React.useState('');
+  const [showSavePreset, setShowSavePreset] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState('theme');
+  const fileInputRef = React.useRef(null);
 
   const handleThemeChange = (t) => {
     playSound('click', soundEnabled);
@@ -53,7 +46,7 @@ const Settings = ({
       const str = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
       navigator.clipboard.writeText(str);
       playSound('success', soundEnabled);
-      alert('完整主题配置（含预设和字体）已复制到剪贴板!');
+      alert('已复制到剪贴板!');
   };
 
   const handleImport = () => {
@@ -75,20 +68,7 @@ const Settings = ({
           setImportString('');
           alert('导入成功！');
       } catch (e) {
-          try {
-             const rawOld = atob(importString);
-             const dataOld = JSON.parse(rawOld);
-             if (dataOld.colors) {
-                 setCustomColors({ ...customColors, ...dataOld.colors });
-                 setTheme('custom');
-                 setShowImport(false);
-                 alert('导入成功 (旧格式)!');
-                 return;
-             }
-          } catch(e2) {}
-
           playSound('fail', soundEnabled);
-          console.error(e);
           alert('无效的配置代码');
       }
   };
@@ -131,14 +111,38 @@ const Settings = ({
               document.fonts.add(loadedFace);
               setFontSettings({ family: fontName, url: '' });
               playSound('success', soundEnabled);
-              alert('字体加载成功！(仅本次会话有效)');
+              alert('字体加载成功！');
           }).catch(err => {
-              console.error(err);
-              alert('字体加载失败，请检查文件格式');
+              alert('字体加载失败');
           });
       };
       reader.readAsDataURL(file);
   };
+
+  const ColorInput = ({ label, value, onChange }) => (
+    <div className="flex flex-col gap-1 bg-black/10 p-1.5 rounded border border-white/5">
+      <div className="flex justify-between items-center">
+          <label className="text-[10px] opacity-70 truncate flex-1">{label}</label>
+          <div className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: value || '#000' }}></div>
+      </div>
+      <div className="flex gap-2">
+        <input 
+          type="text" 
+          value={value || ''} 
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full text-[10px] bg-black/20 rounded px-1 py-0.5 min-w-0 font-mono text-center opacity-80 focus:opacity-100 outline-none focus:ring-1 focus:ring-blue-500"
+        />
+        <div className="relative w-6 h-5 overflow-hidden rounded shrink-0">
+            <input 
+              type="color" 
+              value={value && value.startsWith('#') ? value : '#000000'} 
+              onChange={(e) => onChange(e.target.value)}
+              className="absolute -top-2 -left-2 w-10 h-10 cursor-pointer border-none p-0"
+            />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-full gap-4">
@@ -152,13 +156,13 @@ const Settings = ({
                 onClick={() => setActiveTab('theme')}
                 className={`flex-1 text-xs py-1.5 rounded-md transition-all ${activeTab === 'theme' ? theme.colors.primary + ' text-white font-bold' : 'text-gray-400 hover:text-white'}`}
              >
-                 主题与颜色
+                 主题
              </button>
              <button 
                 onClick={() => setActiveTab('font')}
                 className={`flex-1 text-xs py-1.5 rounded-md transition-all ${activeTab === 'font' ? theme.colors.primary + ' text-white font-bold' : 'text-gray-400 hover:text-white'}`}
              >
-                 字体设置
+                 字体
              </button>
           </div>
       </div>
@@ -250,10 +254,8 @@ const Settings = ({
                         <div>
                             <div className="text-[10px] font-bold opacity-50 uppercase tracking-wider mb-2">状态指示</div>
                             <div className="grid grid-cols-2 gap-2">
-                                <ColorInput label="主色调 (Primary)" value={customColors.primary} onChange={(v) => updateColor('primary', v)} />
-                                <ColorInput label="强调色 (Accent)" value={customColors.accent} onChange={(v) => updateColor('accent', v)} />
-                                <ColorInput label="成功 (Success)" value={customColors.success} onChange={(v) => updateColor('success', v)} />
-                                <ColorInput label="危险 (Danger)" value={customColors.danger} onChange={(v) => updateColor('danger', v)} />
+                                <ColorInput label="主色调" value={customColors.primary} onChange={(v) => updateColor('primary', v)} />
+                                <ColorInput label="强调色" value={customColors.accent} onChange={(v) => updateColor('accent', v)} />
                             </div>
                         </div>
                     </div>
@@ -302,49 +304,12 @@ const Settings = ({
                                 📂 选择字体文件...
                             </button>
                         </div>
-
-                        <hr className="border-white/10" />
-
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] opacity-60">字体名称 (Font Family)</label>
-                            <input 
-                                value={fontSettings.family}
-                                onChange={(e) => setFontSettings({ ...fontSettings, family: e.target.value })}
-                                placeholder="例如: Microsoft YaHei"
-                                className="w-full text-xs bg-black/20 rounded px-2 py-2 border border-transparent focus:border-blue-500 outline-none"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] opacity-60">网络链接 (URL)</label>
-                            <input 
-                                value={fontSettings.url}
-                                onChange={(e) => setFontSettings({ ...fontSettings, url: e.target.value })}
-                                placeholder="https://..."
-                                className="w-full text-xs bg-black/20 rounded px-2 py-2 border border-transparent focus:border-blue-500 outline-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className={`p-4 rounded-lg border ${theme.colors.border} ${theme.colors.panel}`}>
-                    <h3 className="text-xs font-bold opacity-50 mb-2">字体预览</h3>
-                    <div className="text-xl mb-2">永和九年，岁在癸丑</div>
-                    <div className="text-sm opacity-80">
-                        The quick brown fox jumps over the lazy dog.<br/>
-                        1234567890
                     </div>
                 </div>
              </div>
         )}
 
         <div className="space-y-4 pt-4 border-t border-white/10">
-            <ToggleRow 
-                label="音效开关" 
-                enabled={soundEnabled} 
-                onToggle={handleSoundToggle} 
-                theme={theme} 
-            />
-
              <div className={`p-3 rounded-lg bg-black/10 border ${theme.colors.border} space-y-3`}>
                 <div className="flex items-center justify-between">
                     <span className={`text-sm font-medium ${theme.colors.textMain}`}>背景粒子</span>
@@ -355,47 +320,6 @@ const Settings = ({
                         <div className={`w-3 h-3 rounded-full bg-white absolute top-1 transition-transform ${particleConfig.enabled ? 'left-6' : 'left-1'}`} />
                     </button>
                 </div>
-                
-                {particleConfig.enabled && (
-                    <div className="space-y-3 animate-in fade-in">
-                        <div className="flex flex-col gap-1">
-                            <div className="flex justify-between text-xs opacity-70">
-                                <span>密度: {particleConfig.density}</span>
-                            </div>
-                            <input 
-                                type="range" min="10" max="150" step="10"
-                                value={particleConfig.density}
-                                onChange={(e) => updateParticleConfig('density', parseInt(e.target.value))}
-                                className="w-full h-1.5 bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                            />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                             <div className="flex items-center justify-between mb-1">
-                                 <label className="text-xs opacity-70">粒子颜色</label>
-                                 <div className="flex items-center gap-2">
-                                     <span className="text-[10px] opacity-50">跟随主题</span>
-                                     <button 
-                                        onClick={() => updateParticleConfig('color', particleConfig.color === 'auto' ? '#ffffff' : 'auto')}
-                                        className={`w-8 h-4 rounded-full relative transition-colors ${particleConfig.color === 'auto' ? theme.colors.primary : 'bg-gray-600'}`}
-                                     >
-                                         <div className={`w-2 h-2 rounded-full bg-white absolute top-1 transition-transform ${particleConfig.color === 'auto' ? 'left-5' : 'left-1'}`} />
-                                     </button>
-                                 </div>
-                             </div>
-                             
-                             {particleConfig.color !== 'auto' && (
-                                <div className="animate-in fade-in">
-                                    <input 
-                                        type="color"
-                                        value={particleConfig.color}
-                                        onChange={(e) => updateParticleConfig('color', e.target.value)}
-                                        className="w-full h-8 rounded cursor-pointer border-none bg-transparent"
-                                    />
-                                </div>
-                             )}
-                        </div>
-                    </div>
-                )}
              </div>
         </div>
       </div>
@@ -406,48 +330,3 @@ const Settings = ({
     </div>
   );
 };
-
-const ToggleRow = ({ label, enabled, onToggle, theme }) => (
-    <div className="flex items-center justify-between p-2 rounded-lg bg-black/10">
-        <span className={`text-sm font-medium ${theme.colors.textMain}`}>{label}</span>
-        <button 
-        onClick={onToggle}
-        className={`
-            w-10 h-5 rounded-full transition-colors relative
-            ${enabled ? theme.colors.primary : 'bg-gray-600'}
-        `}
-        >
-        <div className={`
-            w-3 h-3 rounded-full bg-white absolute top-1 transition-transform
-            ${enabled ? 'left-6' : 'left-1'}
-        `} />
-        </button>
-    </div>
-);
-
-const ColorInput = ({ label, value, onChange }) => (
-  <div className="flex flex-col gap-1 bg-black/10 p-1.5 rounded border border-white/5">
-    <div className="flex justify-between items-center">
-        <label className="text-[10px] opacity-70 truncate flex-1">{label}</label>
-        <div className="w-4 h-4 rounded-full border border-white/20 shadow-sm" style={{ backgroundColor: value || '#000' }}></div>
-    </div>
-    <div className="flex gap-2">
-      <input 
-        type="text" 
-        value={value || ''} 
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full text-[10px] bg-black/20 rounded px-1 py-0.5 min-w-0 font-mono text-center opacity-80 focus:opacity-100 outline-none focus:ring-1 focus:ring-blue-500"
-      />
-      <div className="relative w-6 h-5 overflow-hidden rounded shrink-0">
-          <input 
-            type="color" 
-            value={value && value.startsWith('#') ? value : '#000000'} 
-            onChange={(e) => onChange(e.target.value)}
-            className="absolute -top-2 -left-2 w-10 h-10 cursor-pointer border-none p-0"
-          />
-      </div>
-    </div>
-  </div>
-);
-
-export default Settings;
