@@ -1,18 +1,15 @@
 
-import React, { useEffect, useRef } from 'react';
-import { themes } from '../../utils/themes.js';
-import { playSound } from '../../utils/sound.js';
-
 const GRID_SIZE = 20;
 const SPEED = 130;
 
-const SnakeGame = ({ 
+window.TK.SnakeGame = ({ 
   onBack, currentTheme, soundEnabled, gameState, setGameState
 }) => {
+  const { themes, playSound } = window.TK;
   const theme = themes[currentTheme];
-  const directionRef = useRef('RIGHT');
-  const gameLoopRef = useRef(null);
-  const touchStartRef = useRef(null);
+  const directionRef = React.useRef('RIGHT');
+  const gameLoopRef = React.useRef(null);
+  const touchStartRef = React.useRef(null);
 
   const generateFood = (snake) => {
     let newFood;
@@ -27,7 +24,7 @@ const SnakeGame = ({
     return newFood;
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!gameState) {
       resetGame();
     } else {
@@ -49,7 +46,7 @@ const SnakeGame = ({
     playSound('click', soundEnabled);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (gameState?.isPlaying && !gameState.gameOver) {
         gameLoopRef.current = setInterval(moveSnake, SPEED);
     }
@@ -101,7 +98,7 @@ const SnakeGame = ({
       });
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKeyDown = (e) => {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
       
@@ -234,5 +231,3 @@ const SnakeGame = ({
     </div>
   );
 };
-
-export default SnakeGame;
