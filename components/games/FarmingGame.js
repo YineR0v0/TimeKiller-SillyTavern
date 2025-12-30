@@ -1,8 +1,4 @@
 
-import React, { useEffect, useState, useRef } from 'react';
-import { themes } from '../../utils/themes.js';
-import { playSound } from '../../utils/sound.js';
-
 const CROPS = {
   wheat: { id: 'wheat', name: '小麦', icon: '🌾', cost: 10, sellPrice: 20, xp: 20, growthTime: 3, unlockLevel: 1 },
   corn: { id: 'corn', name: '玉米', icon: '🌽', cost: 25, sellPrice: 60, xp: 45, growthTime: 8, unlockLevel: 2 },
@@ -21,23 +17,24 @@ const ITEMS = {
     fertilizer: { id: 'fertilizer', name: '化肥', icon: '⚡', cost: 50, desc: '立刻成熟' }
 };
 
-const FarmingGame = ({ 
+window.TK.FarmingGame = ({ 
   onBack, currentTheme, gameState, setGameState, soundEnabled, onSave, onLoad
 }) => {
+  const { themes, playSound } = window.TK;
   const theme = themes[currentTheme];
-  const [selectedTool, setSelectedTool] = useState('wheat');
-  const [activeTab, setActiveTab] = useState('farm');
-  const [floatText, setFloatText] = useState([]);
-  const gameLoopRef = useRef(null);
-  const containerRef = useRef(null);
+  const [selectedTool, setSelectedTool] = React.useState('wheat');
+  const [activeTab, setActiveTab] = React.useState('farm');
+  const [floatText, setFloatText] = React.useState([]);
+  const gameLoopRef = React.useRef(null);
+  const containerRef = React.useRef(null);
   
-  const toolsScrollRef = useRef(null);
-  const isDown = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
-  const dragDistance = useRef(0);
+  const toolsScrollRef = React.useRef(null);
+  const isDown = React.useRef(false);
+  const startX = React.useRef(0);
+  const scrollLeft = React.useRef(0);
+  const dragDistance = React.useRef(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     let newState = {...gameState};
     if (newState.level === undefined) newState.level = 1;
     if (newState.xp === undefined) newState.xp = 0;
@@ -55,7 +52,7 @@ const FarmingGame = ({
     }
   }, [gameState.level]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     gameLoopRef.current = setInterval(() => {
       setGameState({
         ...gameState,
@@ -74,7 +71,7 @@ const FarmingGame = ({
     return () => { if (gameLoopRef.current) clearInterval(gameLoopRef.current); };
   }, [gameState, setGameState]);
 
-  useEffect(() => {
+  React.useEffect(() => {
       if (floatText.length > 0) {
           const timer = setTimeout(() => {
               setFloatText(prev => prev.slice(1));
@@ -249,6 +246,21 @@ const FarmingGame = ({
           e.preventDefault();
       }
   };
+
+  const ToolButton = ({ active, onClick, icon, label, theme, disabled }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`
+        flex flex-col items-center justify-center p-2 rounded-lg min-w-[70px] h-[70px] border transition-all active:scale-95 shrink-0
+        ${active ? `${theme.colors.primary} text-white border-transparent` : `${theme.colors.panel} ${theme.colors.border}`}
+        ${disabled ? 'opacity-40 cursor-not-allowed bg-black/20' : 'hover:scale-105'}
+      `}
+    >
+      <span className="text-2xl mb-1">{icon}</span>
+      <span className="text-xs whitespace-nowrap">{label}</span>
+    </button>
+  );
 
   return (
     <div className="flex flex-col h-full gap-2 relative" ref={containerRef}>
@@ -437,20 +449,3 @@ const FarmingGame = ({
     </div>
   );
 };
-
-const ToolButton = ({ active, onClick, icon, label, theme, disabled }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`
-      flex flex-col items-center justify-center p-2 rounded-lg min-w-[70px] h-[70px] border transition-all active:scale-95 shrink-0
-      ${active ? `${theme.colors.primary} text-white border-transparent` : `${theme.colors.panel} ${theme.colors.border}`}
-      ${disabled ? 'opacity-40 cursor-not-allowed bg-black/20' : 'hover:scale-105'}
-    `}
-  >
-    <span className="text-2xl mb-1">{icon}</span>
-    <span className="text-xs whitespace-nowrap">{label}</span>
-  </button>
-);
-
-export default FarmingGame;
