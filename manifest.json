@@ -1,0 +1,11 @@
+
+{
+    "display_name": "Tavern Timekiller",
+    "name": "tavern-timekiller",
+    "author": "Yoa",
+    "version": "2.1.0",
+    "description": "A floating mini-game collection (Farming, 2048, Minesweeper, Text Adventure, etc.) to kill time while waiting for replies.",
+    "loading_order": 9999,
+    "requires": [],
+    "js": "index.js"
+}
