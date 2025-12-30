@@ -74,7 +74,7 @@
         background: 'transparent'
     });
 
-    // --- SillyTavern 数据同步逻辑 ---
+    // --- SillyTavern 数据同步与交互逻辑 ---
     const syncTavernData = () => {
         if (!iframe.contentWindow) return;
 
@@ -86,44 +86,56 @@
             textMain: style.getPropertyValue('--main_text_color') || '#e2e8f0',
             textDim: style.getPropertyValue('--italics_text_color') || '#94a3b8',
             border: style.getPropertyValue('--border_color') || '#1e293b',
-            // 尝试获取强调色，如果未定义则回退
             primary: style.getPropertyValue('--smart-theme-accent') || '#4ade80', 
             panel: style.getPropertyValue('--block_bg') || style.getPropertyValue('--element_bg') || '#1e293b'
         };
 
-        // 获取用户名 (SillyTavern 全局变量 name1)
-        // 注意：window.name1 是 ST 的标准变量
+        // 获取用户名 ({{user}}) 和 角色名 ({{char}})
+        // SillyTavern 的全局变量通常是 name1 (User) 和 name2 (Character)
         const userName = window.name1 || '旅行者';
+        const charName = window.name2 || '伙伴';
 
         iframe.contentWindow.postMessage({
             type: 'TK_SYNC_DATA',
             payload: {
                 colors: tavernColors,
-                userName: userName
+                userName: userName,
+                charName: charName
             }
         }, '*');
     };
 
-    // 监听来自 iframe 的请求（如 iframe 加载完毕请求数据）
+    // 执行 SillyTavern Slash Command
+    const executeSlashCommand = (command) => {
+        // 尝试调用酒馆的全局命令处理器
+        if (window.slash_commands && typeof window.slash_commands.processSlashCommand === 'function') {
+            window.slash_commands.processSlashCommand(command);
+        } else {
+            console.warn('Tavern Timekiller: Slash commands API not found.');
+        }
+    };
+
+    // 监听来自 iframe 的消息
     window.addEventListener('message', (event) => {
         if (!iframe.contentWindow || event.source !== iframe.contentWindow) return;
 
+        // 窗口交互状态
         if (event.data && event.data.type === 'ST_MAKE_INTERACTIVE') {
             iframe.style.pointerEvents = 'auto';
-            // 每次激活窗口时同步一次，确保主题最新
             syncTavernData();
         }
         if (event.data && event.data.type === 'ST_MAKE_INACTIVE') {
             iframe.style.pointerEvents = 'none';
         }
+        // 数据同步请求
         if (event.data && event.data.type === 'TK_REQUEST_SYNC') {
             syncTavernData();
         }
+        // 执行酒馆命令 (新增)
+        if (event.data && event.data.type === 'TK_EXECUTE_COMMAND') {
+            executeSlashCommand(event.data.payload);
+        }
     });
-
-    // 监听 DOM 变化以自动同步主题（可选，简单起见在点击时同步通常足够）
-    // const observer = new MutationObserver(() => syncTavernData());
-    // observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
 
     // --- 6. 拖动逻辑 ---
     let isDragging = false;
@@ -180,7 +192,7 @@
         if (iframe.contentWindow) {
             iframe.contentWindow.postMessage('TOGGLE_WINDOW', '*');
         } else {
-            iframe.src = iframe.src; // 重试加载
+            iframe.src = iframe.src;
         }
     };
 
