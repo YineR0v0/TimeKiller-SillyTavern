@@ -8,7 +8,7 @@ const getCtx = () => {
   return audioCtx;
 };
 
-export const playSound = (type, enabled) => {
+window.TK.playSound = (type, enabled) => {
   if (!enabled) return;
   
   try {
