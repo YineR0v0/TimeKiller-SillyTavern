@@ -1,17 +1,13 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import { themes } from '../../utils/themes.js';
-import { playSound } from '../../utils/sound.js';
-import { generateAdventureResponse } from '../../services/geminiService.js';
-
-const TextAdventure = ({ 
+window.TK.TextAdventure = ({ 
   onBack, currentTheme, soundEnabled, gameState, setGameState
 }) => {
+  const { themes, playSound, generateAdventureResponse } = window.TK;
   const theme = themes[currentTheme];
-  const [input, setInput] = useState('');
-  const scrollRef = useRef(null);
+  const [input, setInput] = React.useState('');
+  const scrollRef = React.useRef(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!gameState) {
       setGameState({
           messages: [{ role: 'system', text: '欢迎来到文字冒险！你在一个神秘的森林入口醒来。你想要做什么？', timestamp: Date.now() }],
@@ -23,7 +19,7 @@ const TextAdventure = ({
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
       if (scrollRef.current) {
           scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
@@ -120,5 +116,3 @@ const TextAdventure = ({
     </div>
   );
 };
-
-export default TextAdventure;
