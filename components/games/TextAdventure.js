@@ -58,11 +58,16 @@ window.TK.TextAdventure = ({
       
       // Get the last interaction
       const lastMsg = gameState.messages[gameState.messages.length - 1];
-      const textToShare = `[AI 冒险记录] ${lastMsg.text.substring(0, 100)}${lastMsg.text.length > 100 ? '...' : ''}`;
+      let content = lastMsg.text.substring(0, 100);
+      if (lastMsg.text.length > 100) content += '...';
+      
+      // Escape pipes for ST script parser to prevent command injection
+      const safeContent = content.replace(/\|/g, '\\|');
+      const textToShare = `[AI 冒险记录] ${safeContent}`;
       
       // Use /comment command to add to chat without triggering AI response
       executeSTCommand(`/comment ${textToShare}`);
-      showTavernToast("已将最新剧情同步到聊天记录！");
+      showTavernToast("已将最新剧情同步到聊天记录！", 'success');
       playSound('success', soundEnabled);
   };
 
