@@ -175,6 +175,11 @@ window.TK.FarmingGame = ({
         const unlockedCount = newLevel >= 5 ? 9 : newLevel >= 3 ? 6 : 3;
         newPlots = newPlots.map((p, i) => ({ ...p, isUnlocked: i < unlockedCount }));
         triggerFloatText("Level UP!", 'level', e.clientX, e.clientY - 40);
+        
+        // Notify Tavern
+        if (window.TK.showTavernToast) {
+            window.TK.showTavernToast(`农场升级啦! 当前等级: ${newLevel}`, 'success');
+        }
     }
 
     if (actionSuccess) {
