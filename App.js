@@ -66,6 +66,8 @@ window.TK.App = () => {
   const [notification, setNotification] = React.useState(null);
   const [presets, setPresets] = React.useState([]);
   const [fontSettings, setFontSettings] = React.useState({ url: '', family: '' });
+  const [apiKey, setApiKey] = React.useState('');
+  const [userName, setUserName] = React.useState('User');
   
   // Game States
   const [farmingState, setFarmingState] = React.useState(INITIAL_FARMING_STATE);
@@ -80,14 +82,42 @@ window.TK.App = () => {
   const [whackState, setWhackState] = React.useState(undefined);
   const [adventureState, setAdventureState] = React.useState(undefined);
 
-  // Toggle Listener
+  // Toggle Listener & Data Sync
   React.useEffect(() => {
     const handleToggle = () => {
         setIsVisible(prev => !prev);
         playSound('click', true);
     };
+    
+    const handleSync = (event) => {
+        if (!event.data || event.data.type !== 'TK_SYNC_DATA') return;
+        const { colors, userName: newUserName } = event.data.payload;
+        
+        // Update CSS Variables for 'tavern' theme
+        const root = document.documentElement;
+        if (colors) {
+            root.style.setProperty('--tk-st-bg-base', colors.bgBase);
+            root.style.setProperty('--tk-st-bg-header', colors.bgHeader);
+            root.style.setProperty('--tk-st-text-main', colors.textMain);
+            root.style.setProperty('--tk-st-text-dim', colors.textDim);
+            root.style.setProperty('--tk-st-border', colors.border);
+            root.style.setProperty('--tk-st-primary', colors.primary);
+            root.style.setProperty('--tk-st-panel', colors.panel);
+        }
+        
+        if (newUserName) setUserName(newUserName);
+    };
+
     window.addEventListener('toggle-app', handleToggle);
-    return () => window.removeEventListener('toggle-app', handleToggle);
+    window.addEventListener('message', handleSync);
+    
+    // Initial Request for data
+    window.parent.postMessage({ type: 'TK_REQUEST_SYNC' }, '*');
+
+    return () => {
+        window.removeEventListener('toggle-app', handleToggle);
+        window.removeEventListener('message', handleSync);
+    };
   }, []);
 
   // Communicate visibility to parent (SillyTavern host)
@@ -108,6 +138,7 @@ window.TK.App = () => {
             if (data.theme) setThemeMode(data.theme);
             if (data.soundEnabled !== undefined) setSoundEnabled(data.soundEnabled);
             if (data.particleConfig) setParticleConfig(data.particleConfig);
+            if (data.apiKey) setApiKey(data.apiKey);
 
             if (data.farming) setFarmingState(data.farming);
             if (data.game2048State) setGame2048State(data.game2048State);
@@ -149,14 +180,14 @@ window.TK.App = () => {
   // Auto Save
   React.useEffect(() => {
     const data = {
-        theme: themeMode, customColors, soundEnabled, particleConfig,
+        theme: themeMode, customColors, soundEnabled, particleConfig, apiKey,
         farming: farmingState, game2048State, minesweeperState, memoryState,
         tileMatchState, ticTacToeState, snakeState, tetrisState, sudokuState,
         whackAMoleState: whackState, textAdventureState: adventureState,
         presets, fontUrl: fontSettings.url, fontFamily: fontSettings.family
     };
     localStorage.setItem('tavern_timekiller_autosave', JSON.stringify(data));
-  }, [themeMode, customColors, soundEnabled, particleConfig, farmingState, game2048State, minesweeperState, memoryState, tileMatchState, snakeState, ticTacToeState, tetrisState, sudokuState, whackState, adventureState, presets, fontSettings]);
+  }, [themeMode, customColors, soundEnabled, particleConfig, apiKey, farmingState, game2048State, minesweeperState, memoryState, tileMatchState, snakeState, ticTacToeState, tetrisState, sudokuState, whackState, adventureState, presets, fontSettings]);
 
   const showToast = (msg) => {
       setNotification(msg);
@@ -193,6 +224,9 @@ window.TK.App = () => {
 
   if (!isVisible) return null;
 
+  // Pass Config to Global for Service Access
+  window.TK.config = { apiKey, userName };
+
   const renderContent = () => {
     switch (currentGame) {
       case GameType.GAME_2048: return <Game2048 onBack={() => changeGame(GameType.MENU)} currentTheme={themeMode} soundEnabled={soundEnabled} onSave={handleManualSave} onLoad={handleManualLoad} gameState={game2048State} setGameState={setGame2048State} />;
@@ -206,7 +240,7 @@ window.TK.App = () => {
       case GameType.SUDOKU: return <Sudoku onBack={() => changeGame(GameType.MENU)} currentTheme={themeMode} soundEnabled={soundEnabled} gameState={sudokuState} setGameState={setSudokuState} />;
       case GameType.WHACK_A_MOLE: return <WhackAMole onBack={() => changeGame(GameType.MENU)} currentTheme={themeMode} soundEnabled={soundEnabled} gameState={whackState} setGameState={setWhackState} />;
       case GameType.TEXT_ADVENTURE: return <TextAdventure onBack={() => changeGame(GameType.MENU)} currentTheme={themeMode} soundEnabled={soundEnabled} gameState={adventureState} setGameState={setAdventureState} />;
-      case GameType.SETTINGS: return <Settings onBack={() => changeGame(GameType.MENU)} currentTheme={themeMode} setTheme={setThemeMode} customColors={customColors} setCustomColors={setCustomColors} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} particleConfig={particleConfig} setParticleConfig={setParticleConfig} presets={presets} setPresets={setPresets} fontSettings={fontSettings} setFontSettings={setFontSettings} />;
+      case GameType.SETTINGS: return <Settings onBack={() => changeGame(GameType.MENU)} currentTheme={themeMode} setTheme={setThemeMode} customColors={customColors} setCustomColors={setCustomColors} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} particleConfig={particleConfig} setParticleConfig={setParticleConfig} presets={presets} setPresets={setPresets} fontSettings={fontSettings} setFontSettings={setFontSettings} apiKey={apiKey} setApiKey={setApiKey} />;
       default: return (
           <div className="flex flex-col h-full animate-in slide-in-from-bottom-4 duration-500 overflow-hidden">
             <h1 className={`text-lg font-bold mb-4 ${theme.colors.textMain} text-center border-b border-white/10 pb-2 tracking-wide shrink-0`}>游戏中心</h1>
