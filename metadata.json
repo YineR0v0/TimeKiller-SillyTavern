@@ -1,5 +1,0 @@
-{
-  "name": "Tavern Timekiller",
-  "description": "一个可拖动、可最小化的悬浮小组件，包含迷你游戏和AI驱动的文字冒险，用于消磨时间，专为SillyTavern（酒馆）风格设计。",
-  "requestFramePermissions": []
-}
