@@ -1,12 +1,35 @@
 
 (function() {
-    const EXTENSION_NAME = "tavern-timekiller"; 
     const EXTENSION_ID = 'tavern-timekiller-host';
     
+    // 动态获取当前脚本路径，解决文件夹重命名导致的 404 问题
+    let extensionRoot = '';
+    const scriptName = 'index.js';
+    
+    if (document.currentScript) {
+        extensionRoot = document.currentScript.src.replace('/' + scriptName, '');
+    } else {
+        const scripts = document.querySelectorAll('script');
+        for (const script of scripts) {
+             if (script.src && script.src.includes(scriptName)) {
+                 // 简单的启发式搜索
+                 if (script.src.includes('tavern-timekiller') || script.src.includes('extensions')) {
+                    extensionRoot = script.src.replace('/' + scriptName, '');
+                    break;
+                 }
+             }
+        }
+    }
+
+    // 如果仍然找不到，回退到默认值
+    if (!extensionRoot) {
+        extensionRoot = 'scripts/extensions/tavern-timekiller';
+    }
+
+    console.log(`Tavern Timekiller: Root detected at ${extensionRoot}`);
+
     const oldHost = document.getElementById(EXTENSION_ID);
     if (oldHost) oldHost.remove();
-
-    console.log(`${EXTENSION_NAME}: Loading Modular React Version...`);
 
     const host = document.createElement('div');
     host.id = EXTENSION_ID;
@@ -32,18 +55,15 @@
     launcherBtn.onmouseleave = () => launcherBtn.style.transform = 'scale(1)';
     
     const iframe = document.createElement('iframe');
-    iframe.src = `scripts/extensions/${EXTENSION_NAME}/index.html`;
+    iframe.src = `${extensionRoot}/index.html`; // 使用动态路径
     Object.assign(iframe.style, {
         border: 'none', width: '100vw', height: '100vh',
         position: 'fixed', top: '0', left: '0',
-        pointerEvents: 'none', // Default to none so we can click through
+        pointerEvents: 'none',
         background: 'transparent'
     });
 
-    // Handle messages from the iframe (React app)
     window.addEventListener('message', (event) => {
-        // Security check: ensure message comes from our iframe
-        // Note: iframe.contentWindow might be null if iframe is removed
         if (!iframe.contentWindow || event.source !== iframe.contentWindow) return;
 
         if (event.data && event.data.type === 'ST_MAKE_INTERACTIVE') {
@@ -56,10 +76,7 @@
 
     launcherBtn.onclick = () => {
         if (iframe.contentWindow) {
-            // Send toggle command to React
             iframe.contentWindow.postMessage('TOGGLE_WINDOW', '*');
-        } else {
-            console.error(`${EXTENSION_NAME}: Iframe content window not found`);
         }
     };
 
