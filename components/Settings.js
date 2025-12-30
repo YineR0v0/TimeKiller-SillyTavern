@@ -46,8 +46,8 @@ window.TK.Settings = ({
       };
       const str = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
       navigator.clipboard.writeText(str);
+      window.TK.showTavernToast('配置已复制到剪贴板!', 'success');
       playSound('success', soundEnabled);
-      alert('已复制到剪贴板!');
   };
 
   const handleImport = () => {
@@ -67,10 +67,10 @@ window.TK.Settings = ({
           playSound('success', soundEnabled);
           setShowImport(false);
           setImportString('');
-          alert('导入成功！');
+          window.TK.showTavernToast('配置导入成功！', 'success');
       } catch (e) {
           playSound('fail', soundEnabled);
-          alert('无效的配置代码');
+          window.TK.showTavernToast('无效的配置代码', 'error');
       }
   };
 
@@ -112,9 +112,9 @@ window.TK.Settings = ({
               document.fonts.add(loadedFace);
               setFontSettings({ family: fontName, url: '' });
               playSound('success', soundEnabled);
-              alert('字体加载成功！');
+              window.TK.showTavernToast('字体加载成功！', 'success');
           }).catch(err => {
-              alert('字体加载失败');
+              window.TK.showTavernToast('字体加载失败', 'error');
           });
       };
       reader.readAsDataURL(file);
