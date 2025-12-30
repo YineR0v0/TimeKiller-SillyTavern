@@ -47,6 +47,7 @@ const DEFAULT_PARTICLE_CONFIG: ParticleConfig = {
 };
 
 const App: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false); // Default hidden
   const [currentGame, setCurrentGame] = useState<GameType>(GameType.MENU);
   const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
   const [customColors, setCustomColors] = useState<Partial<ThemeColors>>(DEFAULT_CUSTOM_COLORS);
@@ -56,6 +57,7 @@ const App: React.FC = () => {
   const [presets, setPresets] = useState<ThemePreset[]>([]);
   const [fontSettings, setFontSettings] = useState({ url: '', family: '' });
   
+  // Game States
   const [farmingState, setFarmingState] = useState<FarmingState>(INITIAL_FARMING_STATE);
   const [game2048State, setGame2048State] = useState<Game2048State | undefined>(undefined);
   const [minesweeperState, setMinesweeperState] = useState<MinesweeperState | undefined>(undefined);
@@ -68,14 +70,17 @@ const App: React.FC = () => {
   const [whackState, setWhackState] = useState<WhackAMoleState | undefined>(undefined);
   const [adventureState, setAdventureState] = useState<TextAdventureState | undefined>(undefined);
 
+  // Toggle Listener
   useEffect(() => {
     const handleToggle = () => {
-        // Handle external toggles if needed
+        setIsVisible(prev => !prev);
+        playSound('click', true);
     };
     window.addEventListener('toggle-app', handleToggle);
     return () => window.removeEventListener('toggle-app', handleToggle);
   }, []);
 
+  // Auto Load
   useEffect(() => {
     const saved = localStorage.getItem('tavern_timekiller_autosave');
     if (saved) {
@@ -107,6 +112,7 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Font Injection
   useEffect(() => {
     if (fontSettings.url) {
         const existing = document.getElementById('custom-font-link');
@@ -121,6 +127,7 @@ const App: React.FC = () => {
     else document.body.style.removeProperty('font-family');
   }, [fontSettings]);
 
+  // Auto Save
   useEffect(() => {
     const data: SaveData = {
         theme: themeMode, customColors, soundEnabled, particleConfig,
@@ -164,6 +171,8 @@ const App: React.FC = () => {
 
   const theme = themes[themeMode];
   const changeGame = (type: GameType) => { playSound('click', soundEnabled); setCurrentGame(type); };
+
+  if (!isVisible) return null;
 
   const renderContent = () => {
     switch (currentGame) {
