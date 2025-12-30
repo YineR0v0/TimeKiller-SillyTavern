@@ -1,8 +1,4 @@
 
-import React, { useEffect, useRef, useCallback } from 'react';
-import { themes } from '../../utils/themes.js';
-import { playSound } from '../../utils/sound.js';
-
 const ROWS = 20;
 const COLS = 10;
 const SHAPES = [
@@ -18,15 +14,16 @@ const COLORS = ['#06b6d4', '#fbbf24', '#a855f7', '#f97316', '#3b82f6', '#22c55e'
 
 const createEmptyGrid = () => Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
 
-const Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState }) => {
+window.TK.Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState }) => {
+  const { themes, playSound } = window.TK;
   const theme = themes[currentTheme];
-  const requestRef = useRef(null);
-  const lastTimeRef = useRef(0);
-  const dropCounterRef = useRef(0);
-  const dropInterval = useRef(800);
+  const requestRef = React.useRef(null);
+  const lastTimeRef = React.useRef(0);
+  const dropCounterRef = React.useRef(0);
+  const dropInterval = React.useRef(800);
   
-  const moveIntervalRef = useRef(null);
-  const isTouchingRef = useRef(false);
+  const moveIntervalRef = React.useRef(null);
+  const isTouchingRef = React.useRef(false);
 
   const spawnPiece = (currentNextPiece, currentState) => {
     const id = Math.floor(Math.random() * SHAPES.length);
@@ -61,7 +58,7 @@ const Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState })
       playSound('click', soundEnabled);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!gameState) {
         resetGame();
     }
@@ -73,7 +70,7 @@ const Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState })
     };
   }, []);
 
-  const stateRef = useRef(gameState);
+  const stateRef = React.useRef(gameState);
   stateRef.current = gameState;
 
   const checkCollision = (grid, shape, x, y) => {
@@ -120,7 +117,7 @@ const Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState })
     return { newGrid, linesCleared };
   };
 
-  const handleDrop = useCallback(() => {
+  const handleDrop = React.useCallback(() => {
     const current = stateRef.current;
     if (!current || !current.activePiece) return;
 
@@ -174,7 +171,7 @@ const Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState })
     requestRef.current = requestAnimationFrame(gameLoop);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
      if (requestRef.current) cancelAnimationFrame(requestRef.current);
      requestRef.current = requestAnimationFrame(gameLoop);
      return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); }
@@ -380,5 +377,3 @@ const Tetris = ({ onBack, currentTheme, soundEnabled, gameState, setGameState })
     </div>
   );
 };
-
-export default Tetris;
