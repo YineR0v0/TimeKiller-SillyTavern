@@ -1,9 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { themes } from '../utils/themes.js';
-import ParticleBackground from './ParticleBackground.js';
-
-const FloatingWindow = ({ 
+window.TK.FloatingWindow = ({ 
   title, 
   children, 
   initialPosition = { x: 20, y: 20 },
@@ -11,12 +7,14 @@ const FloatingWindow = ({
   customColors,
   particleConfig
 }) => {
-  const [position, setPosition] = useState(initialPosition);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isMinimized, setIsMinimized] = useState(false);
+  const { themes } = window.TK;
+  const ParticleBackground = window.TK.ParticleBackground;
+  const [position, setPosition] = React.useState(initialPosition);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
+  const [isMinimized, setIsMinimized] = React.useState(false);
   
-  const windowRef = useRef(null);
+  const windowRef = React.useRef(null);
   const theme = themes[currentTheme];
 
   const getStyle = () => {
@@ -61,7 +59,7 @@ const FloatingWindow = ({
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleMouseMove = (e) => {
       if (isDragging) {
         moveWindow(e.clientX, e.clientY);
@@ -182,5 +180,3 @@ const FloatingWindow = ({
     </div>
   );
 };
-
-export default FloatingWindow;
