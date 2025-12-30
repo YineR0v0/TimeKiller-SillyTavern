@@ -1,5 +1,5 @@
 
-export const GameType = {
+window.TK.GameType = {
   MENU: 'MENU',
   SETTINGS: 'SETTINGS',
   GAME_2048: 'GAME_2048',
