@@ -1,0 +1,11 @@
+
+{
+    "display_name": "Tavern Timekiller",
+    "name": "tavern-timekiller",
+    "author": "User",
+    "version": "4.0.0",
+    "description": "A floating mini-game collection using modular JS and React.",
+    "loading_order": 9999,
+    "requires": [],
+    "js": "index.js"
+}
